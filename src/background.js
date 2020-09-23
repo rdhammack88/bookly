@@ -24,6 +24,7 @@
  * @param {obj} tab
  */
 const init = (tab) => {
+    // console.log(window.navigator);
     createBookmarkFolder();
     // getBookmarks();
 };
@@ -33,7 +34,7 @@ const init = (tab) => {
  * Defaults to the first index of "Other Bookmarks" Folder
  * Default title set to "Tabs-from-{TODAYS DATE}"
  */
-const createBookmarkFolder = () => {
+const createBookmarkFolder = (incognito = false, domainNames = []) => {
     const date = new Date(); // MAYBE ADD CURRENT TIME
     const fullDate = date.toDateString().split(' ').join('-');
 
@@ -45,23 +46,167 @@ const createBookmarkFolder = () => {
     );
 };
 
+const createPublicSubTreeFolder = () => {
+    // if (tabData.publicWindows.length) {
+    //     chrome.bookmarks.create({
+    //         parentId: bookmarkNodeTree.id,
+    //         title: `${tabData.publicWindows.length}-Public-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
+    //         index: 0
+    //     }, bookmarkNodeTree => {
+    //         tabData.publicWindows.forEach(tab => {
+    //             chrome.bookmarks.create({
+    //                 parentId: bookmarkNodeTree.id,
+    //                 title: tab.title,
+    //                 url: tab.url,
+    //             });
+    //         })
+    //     })
+    // }
+}
+
+const createPrivateSubTreeFolder = () => {
+    // if (tabData.privateWindows.length) {
+    //     chrome.bookmarks.create({
+    //         parentId: bookmarkNodeTree.id,
+    //         title: `${tabData.privateWindows.length}-Incognito-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
+    //         index: 0
+    //     }, bookmarkNodeTree => {
+    //         tabData.privateWindows.forEach(tab => {
+    //             chrome.bookmarks.create({
+    //                 parentId: bookmarkNodeTree.id,
+    //                 title: tab.title,
+    //                 url: tab.url,
+    //             });
+    //         })
+    //     })
+    // }
+}
+
+const createDomainSubTreeFolder = () => {
+    tabData.domainNames = tabData.domainNames.sort();
+    tabData.domainNames.forEach(domain => {
+        chrome.bookmarks.create({
+            parentId: bookmarkNodeTree.id,
+            title: domain,
+        }, bookmarkNodeTree => {
+            tabs.forEach(tab => {
+                if (tab.url.includes(domain)) {
+                    chrome.bookmarks.create({
+                        parentId: bookmarkNodeTree.id,
+                        title: tab.title,
+                        url: tab.url
+                    })
+                }
+            })
+        });
+    })
+}
+
 /**
  * Called as CALLBACK when Bookmark Folder has been created
  * Saves ALL open tabs to previously created folder at first index of "Other Bookmarks", titled -> "Tabs-from-{TODAYS DATE}"
  * Calls saveTabsToFile() upon completion of saving each tab to the bookmark folder
- * @param {obj} bookmark
+ * @param {obj} bookmarkNodeTree
  */
-const saveOpenTabs = (bookmark) => {
+const saveOpenTabs = (bookmarkNodeTree) => {
+    const tabData = {
+        publicWindows: [],
+        privateWindows: [],
+        privateTabIds: [],
+        domainNames: []
+    }
     chrome.tabs.query({}, (tabs) => {
-        tabs.forEach((tab) => {
-            chrome.bookmarks.create({
-                parentId: bookmark.id,
-                title: tab.title,
-                url: tab.url,
-            });
+
+        chrome.browserAction.setBadgeText({
+            text: tabs.length.toString()
         });
 
-        saveTabsToFile(tabs);
+        tabs.forEach((tab) => {
+            let tabUrl = tab.url.split('//').pop().toString().split('/')[0].toString().replace('www.', '').replace('.com', '').replace('.org', '').split('.');
+            tabUrl = tabUrl[tabUrl.length - 1];
+            if (!tabData.domainNames.includes(tabUrl)) {
+                tabData.domainNames.push(tabUrl);
+            }
+            // console.log(tabUrl);
+            // console.log(tab.id);
+
+            // chrome.bookmarks.create({
+            //     parentId: bookmarkNodeTree.id,
+            //     title: tab.title,
+            //     url: tab.url,
+            // });
+
+            if (tab.incognito) {
+                tabData.privateWindows.push(tab);
+                tabData.privateTabIds.push(tab.id);
+            } else if (!tab.incognito) {
+                tabData.publicWindows.push(tab);
+            }
+        });
+
+        // tabData.domainNames = tabData.domainNames.sort();
+        // tabData.domainNames.forEach(domain => {
+        //     chrome.bookmarks.create({
+        //         parentId: bookmarkNodeTree.id,
+        //         title: domain,
+        //     }, bookmarkNodeTree => {
+        //         tabs.forEach(tab => {
+        //             if (tab.url.includes(domain)) {
+        //                 chrome.bookmarks.create({
+        //                     parentId: bookmarkNodeTree.id,
+        //                     title: tab.title,
+        //                     url: tab.url
+        //                 })
+        //             }
+        //         })
+        //     });
+        // })
+
+        // console.log(tabData.privateTabIds);
+        // console.log(tabData.privateTabIds.length);
+        console.log('Domain Names: ', tabData.domainNames);
+        console.log('Public Windows: ', tabData.publicWindows);
+        console.log('Private Windows: ', tabData.privateWindows);
+
+
+        // if (tabData.privateTabIds.length) {
+        //     chrome.tabs.remove(tabData.privateTabIds);
+        // }
+
+        // if (tabData.publicWindows.length) {
+        //     chrome.bookmarks.create({
+        //         parentId: bookmarkNodeTree.id,
+        //         title: `${tabData.publicWindows.length}-Public-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
+        //         index: 0
+        //     }, bookmarkNodeTree => {
+        //         tabData.publicWindows.forEach(tab => {
+        //             chrome.bookmarks.create({
+        //                 parentId: bookmarkNodeTree.id,
+        //                 title: tab.title,
+        //                 url: tab.url,
+        //             });
+        //         })
+        //     })
+        // }
+
+        // if (tabData.privateWindows.length) {
+        //     chrome.bookmarks.create({
+        //         parentId: bookmarkNodeTree.id,
+        //         title: `${tabData.privateWindows.length}-Incognito-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
+        //         index: 0
+        //     }, bookmarkNodeTree => {
+        //         tabData.privateWindows.forEach(tab => {
+        //             chrome.bookmarks.create({
+        //                 parentId: bookmarkNodeTree.id,
+        //                 title: tab.title,
+        //                 url: tab.url,
+        //             });
+        //         })
+        //     })
+        // }
+
+        // saveTabsToFile(tabs);
+
     });
 };
 
@@ -89,7 +234,7 @@ const saveTabsToFile = (tabs) => {
                 a.setAttribute('download', filename);
                 a.click();
             }
-            saveText(JSON.stringify(tabsInfo, null, 2), 'tabs-' + fullDate + '.json');
+            saveText(JSON.stringify(tabsInfo, null, 2), ${openTabs.length} + '-tabs-' + fullDate + '.json');
         `,
     });
 };
