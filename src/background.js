@@ -4,45 +4,75 @@
 
 /** Called when user clicks on the browser action button */
 chrome.browserAction.onClicked.addListener((tab) => {
-    console.log('clicked');
-
-    // chrome.bookmarks.getTree((bookmarks) => {
-    //     const books = bookmarks[0].children;
-    //     console.log(books);
-    // });
-
-    // const openTabs = queryTabs();
-    // console.log(openTabs);
-
-    // console.log(queryTabs());
-
-    // createBookmarkFolder();
-
-    queryTabs();
+    // console.log('clicked');
+    createBookmarkFolder()
 
 })
 
 /** Called when new bookmark has been created */
 chrome.bookmarks.onCreated.addListener((id, bookmark) => {
-    console.log('id: ', id);
-    console.log('bookmark: ', bookmark);
+    // return queryTabs(id, bookmark);
+    let openTabs;
 
-    saveBookmarks(id, queryTabs);
-    // const openTabs = queryTabs();
-    // console.log(openTabs);
-});
+    chrome.tabs.query({}, (tabs) => {
+        openTabs = tabs;
+        // const openTabs = tabs.map((tab) => ({
+        //     title: tab.title,
+        //     url: tab.url,
+        //     private: tab.incognito
+        // }));
+        console.log('Open Tabs: ', openTabs);
+        console.log('id: ', id);
+        console.log('tabs: ', tabs);
+        // tabs.forEach((tab) => {
+        //     console.log('id: ', id);
+        //     console.log('URL: ', tab.url);
+        //     chrome.bookmarks.create({
+        //         parentId: id,
+        //         title: tab.title,
+        //         url: tab.url
+        //     })
+        // })
+    });
+    console.log('Open Tabs: ', openTabs);
+})
 
 /**
  * Functions
  */
 
 /**
+ * Queries ALL open tabs
+ */
+// const queryTabs = (id, bookmark) => {
+//     // console.log('Querying tabs');
+//     /**
+//      * Query open tabs and save to a JSON file
+//      */
+//     chrome.tabs.query({}, (tabs) => {
+//         const openTabs = tabs.map((tab) => ({
+//             title: tab.title,
+//             url: tab.url,
+//             private: tab.incognito
+//         }));
+//         console.log(openTabs);
+//         return saveBookmarks(id, bookmark, openTabs);
+
+//         // return createBookmarkFolder(openTabs);
+//         // saveTabsToFile(openTabs);
+//     });
+// }
+
+/**
  * Creates a NEW bookmark folder to save ALL open tabs to
  */
-const createBookmarkFolder = (tabs) => {
-    let date = new Date();
-    let fullDate = date.toDateString().split(' ').join('-');
-    console.log(tabs);
+const createBookmarkFolder = () => {
+    const date = new Date();
+    const fullDate = date.toDateString().split(' ').join('-');
+    // const openTabs = queryTabs();
+    // console.log('Opened Tabs: ', openTabs);
+
+
 
     chrome.bookmarks.create({
         parentId: '2',
@@ -51,38 +81,39 @@ const createBookmarkFolder = (tabs) => {
 
 }
 
-/**
- * Queries ALL open tabs
- */
-const queryTabs = () => {
-    console.log('Querying tabs');
-    /**
-     * Query open tabs and save to a JSON file
-     */
-    return chrome.tabs.query({}, (tabs) => {
-        const openTabs = tabs.map((tab) => ({
-            title: tab.title,
-            url: tab.url,
-            private: tab.incognito
-        }));
-        console.log(openTabs);
-        // return saveBookmarks(openTabs);
-
-        return createBookmarkFolder(openTabs);
-        // saveTabsToFile(openTabs);
-    });
+const createBookmark = (tab, id) => {
+    return chrome.bookmarks.create({
+        parentId: id,
+        title: tab.title,
+        url: tab.url
+    })
 }
 
 /**
  * Saves ALL open tabs to previously created bookmarks folder
  * @param {obj} tabs 
  */
-const saveBookmarks = (id, tabs) => {
+const saveBookmarks = (id, bookmark, openTabs) => {
     console.log('Saving Bookmarks');
     console.log('id: ', id);
-    console.log('tabs: ', tabs());
+    console.log('bookmark: ', bookmark);
+    console.log('Open Tabs: ', openTabs.length);
+    console.log('Open Tabs: ', openTabs);
     // const openTabs = queryTabs();
     // console.log(openTabs);
+
+    openTabs.forEach((tab) => {
+        return createBookmark(tab, id)
+    })
+    // for (let i = 0; i <= openTabs.length; i++) {
+    //     console.log(openTabs);
+
+    //     chrome.bookmarks.create({
+    //         parentId: id,
+    //         title: openTabs[i].title,
+    //         url: openTabs[i].url
+    //     })
+    // }
 }
 
 /**
