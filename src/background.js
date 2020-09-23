@@ -11,9 +11,15 @@ chrome.browserAction.onClicked.addListener((tab) => {
     //     console.log(books);
     // });
 
-    const openTabs = queryTabs();
-    console.log(openTabs);
-    createBookmarkFolder();
+    // const openTabs = queryTabs();
+    // console.log(openTabs);
+
+    // console.log(queryTabs());
+
+    // createBookmarkFolder();
+
+    queryTabs();
+
 })
 
 /** Called when new bookmark has been created */
@@ -21,7 +27,7 @@ chrome.bookmarks.onCreated.addListener((id, bookmark) => {
     console.log('id: ', id);
     console.log('bookmark: ', bookmark);
 
-    saveBookmarks(queryTabs())
+    saveBookmarks(id, queryTabs);
     // const openTabs = queryTabs();
     // console.log(openTabs);
 });
@@ -33,14 +39,16 @@ chrome.bookmarks.onCreated.addListener((id, bookmark) => {
 /**
  * Creates a NEW bookmark folder to save ALL open tabs to
  */
-const createBookmarkFolder = () => {
+const createBookmarkFolder = (tabs) => {
     let date = new Date();
     let fullDate = date.toDateString().split(' ').join('-');
+    console.log(tabs);
 
     chrome.bookmarks.create({
         parentId: '2',
         title: `Tabs-from-${fullDate}`
     })
+
 }
 
 /**
@@ -60,8 +68,8 @@ const queryTabs = () => {
         console.log(openTabs);
         // return saveBookmarks(openTabs);
 
-        saveTabsToFile(openTabs);
-        return openTabs;
+        return createBookmarkFolder(openTabs);
+        // saveTabsToFile(openTabs);
     });
 }
 
@@ -69,11 +77,12 @@ const queryTabs = () => {
  * Saves ALL open tabs to previously created bookmarks folder
  * @param {obj} tabs 
  */
-const saveBookmarks = (tabs) => {
+const saveBookmarks = (id, tabs) => {
     console.log('Saving Bookmarks');
-    console.log(tabs);
-    const openTabs = queryTabs();
-    console.log(openTabs);
+    console.log('id: ', id);
+    console.log('tabs: ', tabs());
+    // const openTabs = queryTabs();
+    // console.log(openTabs);
 }
 
 /**
