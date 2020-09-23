@@ -1,28 +1,37 @@
+/////////////////////////////////////////
 /**
- * WORKING VERSION 1.1
+ * WORKING VERSION 1.2
+ * Author: Dustin Hammack
+ * Created: September 2020
  *
  * Currently Working -
- *   - Creates Bookmark Folder (Index of parent folder not what is expected though)
- *   - Saves All opened tabs to JSON file
- *   - Saves All opened tabs to previously created Bookmark folder
- *   - Recursively traverse through Bookmarks and get total folder and bookmark count
+ *   - createBookmarkFolder() Function -
+ *     - Creates Bookmark Folder (Currently defaults to first index of "Other Bookmarks" forlder)
+ *     - Saves All opened tabs to previously created Bookmark folder titled -> Tabs-from-{TODAYS CURRENT DATE}
+ *     - Saves All opened tabs to JSON file - also titled -> Tabs-from-{TODAYS CURRENT DATE}
+ * 
+ *   - getBookmarks() Function -
+ *     - Recursively traverse through Bookmarks and get total folder and bookmark count
+ * 
  *   __ NEEDS CLEANED __
- */ /////////////////////////////////////////
+ */
+/////////////////////////////////////////
 
 /** Functions */
 
 /**
- *
+ * Initialize processes upon user action click
  * @param {obj} tab
  */
 const init = (tab) => {
-    // createBookmarkFolder();
-    getBookmarks();
+    createBookmarkFolder();
+    // getBookmarks();
 };
 
 /**
  * Creates a NEW bookmark folder to SAVE ALL open tabs to
- * Defaults to the top of OTHER Bookmarks Folder
+ * Defaults to the first index of "Other Bookmarks" Folder
+ * Default title set to "Tabs-from-{TODAYS DATE}"
  */
 const createBookmarkFolder = () => {
     const date = new Date(); // MAYBE ADD CURRENT TIME
@@ -38,6 +47,8 @@ const createBookmarkFolder = () => {
 
 /**
  * Called as CALLBACK when Bookmark Folder has been created
+ * Saves ALL open tabs to previously created folder at first index of "Other Bookmarks", titled -> "Tabs-from-{TODAYS DATE}"
+ * Calls saveTabsToFile() upon completion of saving each tab to the bookmark folder
  * @param {obj} bookmark
  */
 const saveOpenTabs = (bookmark) => {
@@ -56,7 +67,7 @@ const saveOpenTabs = (bookmark) => {
 
 /**
  * Saves ALL open tabs to JSON file
- * Called when ALL opened tabs have been saved to Bookmarks Folder
+ * Called when ALL opened tabs have been saved to Bookmarks Folder in saveOpenTabs()
  * @param {obj} tabs
  */
 const saveTabsToFile = (tabs) => {
@@ -83,35 +94,31 @@ const saveTabsToFile = (tabs) => {
     });
 };
 
+/**
+ * Recursive call to retrieve all bookmarks and bookmark folders
+ * Initial call in getBookmarks()
+ * @param {obj} bookmarkData 
+ * @param {obj} bookmarks 
+ */
 const scanBookmarks = (bookmarkData, bookmarks) => {
-    // console.log('Bookmark Data: ', bookmarkData);
-
-    // if (!bookmarks.url && !bookmarks.children) {
-    //     return bookmarkData;;
-    // }
-
     if (bookmarks.url) {
         bookmarkData.totalBookmarks++;
         bookmarkData.bookmarks.push(bookmarks);
-        // return bookmarkData;
     }
 
     if (bookmarks.children) {
-        // bookmarkData.totalFolders += bookmarks.children.length;
         bookmarks.children.forEach((bookmark) => {
-            // if (bookmark.children) {
             bookmarkData.totalFolders++;
             bookmarkData.bookmarkFolders.push(bookmarks);
             return scanBookmarks(bookmarkData, bookmark);
-            // }
         })
     }
-    // console.log('Finished Scanning Bookmarks!');
-    // return bookmarkData;
 };
 
 /**
  * Iterate through all bookmarks
+ * Initialize bookmarkData to keep track of count
+ * Initialized upon user action click
  */
 const getBookmarks = () => {
     let bookmarkData = {
@@ -123,24 +130,18 @@ const getBookmarks = () => {
 
     chrome.bookmarks.getTree((bookmarks) => {
         console.log('Bookmarks: ', bookmarks);
+
         bookmarks.forEach((bookmark) => {
-            // console.log('Bookmark Data: ', bookmarkData);
-            // bookmarkData.totalFolders++;
-            // bookmarkData.bookmarkFolders.push(bookmark);
-            // console.log('Bookmark Data: ', bookmarkData);
             return scanBookmarks(bookmarkData, bookmark);
-            // scanBookmarks(totalBookmarks, totalFolders, bookmark);
         });
+
         console.log('Finished Scanning Bookmarks!');
-
         console.log('Bookmark Data: ', bookmarkData);
-        console.log('Bookmark Data Stringified: ', JSON.stringify(bookmarkData));
-    });
+        const bookmarkDataStringified = JSON.stringify(bookmarkData);
+        // console.log('Bookmark Data Stringified: ', JSON.stringify(bookmarkData));
 
-    // console.log('Total Bookmarks: ', bookmarkData.totalBookmarks);
-    // console.log('Total Folders: ', bookmarkData.totalFolders);
-    // console.log('Bookmark Count: ', bookmarkData);
-    // console.log('Finished Scanning Bookmarks!');
+        // console.log('Bookmark Data Stringified: ', JSON.stringify(bookmarkData));
+    });
 };
 
 /** Event Listeners */
@@ -162,95 +163,16 @@ chrome.browserAction.onClicked.addListener(init);
 
 // const getBookmarks = () => {
 
-//     // // console.log('Total Bookmarks: ', totalBookmarks); // Equaling 0
-//     // // console.log('Total Folders: ', totalFolders); // Equaling 0
+//     chrome.bookmarks.getSubTree('1', (bookmarkTreeNode) => {
+//         console.log('Sub Tree Nodes: ', bookmarkTreeNode);
+//     });
 
-//     // // scanBookmarks(totalBookmarks, totalFolders, bookmarks[0]);
-//     // // console.log('Total Bookmarks: ', totalBookmarks);
-//     // // console.log('Total Folders: ', totalFolders);
+//     chrome.bookmarks.getChildren('1', (bookmarkTreeNode) => {
+//         console.log('Children Nodes: ', bookmarkTreeNode);
+//     });
 
-//     // // console.log('Bookmark Tree Nodes: ', bookmarks);
-//     // // const myBookmarksObj = bookmarks[0].children
-//     // // console.log('Type of Bookmarks first index: ', typeof bookmarks[0]);
-//     // // console.log('Type of Bookmarks: ', typeof bookmarks);
-//     // // console.log('Type of My Bookmarks Object: ', typeof myBookmarksObj);
-//     // // console.log('My Bookmarks Object: ', myBookmarksObj);
-//     // // scanBookmarks(totalBookmarks, totalFolders, bookmarks);
-//     // });
+//     chrome.bookmarks.getRecent(1000000, (bookmarkTreeNode) => {
+//         console.log('Recent Bookmarks Length: ', bookmarkTreeNode.length);
+//     });
 
-//     // // chrome.bookmarks.getSubTree('1', (bookmarkTreeNode) => {
-//     // //     console.log('Sub Tree Nodes: ', bookmarkTreeNode);
-//     // // });
-
-//     // // chrome.bookmarks.getChildren('1', (bookmarkTreeNode) => {
-//     // //     console.log('Children Nodes: ', bookmarkTreeNode);
-//     // // });
-
-//     // // chrome.bookmarks.getRecent(1000000, (bookmarkTreeNode) => {
-//     // //     console.log('Recent Bookmarks Length: ', bookmarkTreeNode.length);
-//     // // });
-
-//     // // const myBookmarks = myBookmarksObj.map(bookmark => {
-//     // //     // return bookmark;
-//     // //     if (bookmark.children) {
-//     // //         // return bookmark.children.length;
-//     // //         // return totalFolders++;
-//     // //         return scanBookmarks(bookmark.children);
-
-//     // //     } else if (bookmark.url) {
-//     // //         // return bookmark.url;
-//     // //         return totalBookmarks++;
-//     // //     }
-//     // // });
-//     // // console.log(myBookmarks);
-//     // // console.log(bookmarks);
 // }
-
-
-//////////////////////////////////
-//////////////////////////////////
-//////////////////////////////////
-
-
-// // const scanBookmarks = (totalBookmarks, totalFolders, bookmarks) => {
-// const scanBookmarks = (bookmarkCount, bookmarks) => {
-//     // console.log('Total Bookmarks: ', totalBookmarks);
-//     // console.log('Total Folders: ', totalFolders);
-//     // console.log('Bookmarks: ', bookmarks);
-
-//     // console.log(typeof bookmarks);
-
-//     console.log(bookmarkCount);
-
-//     if (bookmarks.children) {
-//         bookmarkCount.totalFolders += bookmarks.children.length;
-//         scanBookmarks(bookmarkCount, bookmarks);
-
-//         // bookmarks.children.forEach((bookmark) => {
-//         //     if (bookmark.url) {
-//         //         bookmarkCount.totalBookmarks++;
-//         //     } else if (bookmark.children) {
-//         //         bookmarkCount.totalFolders += bookmark.children.length;
-//         //     }
-//         //     // console.log('Total Folders: ', totalFolders);
-//         //     // console.log('Bookmark children length: ', bookmark.children.length);
-//         //     scanBookmarks(bookmarkCount, bookmark);
-//         // });
-//     }
-
-//     if (bookmarks.url) {
-//         bookmarkCount.totalBookmarks++;
-//         // console.log('Total Bookmarks: ', totalBookmarks);
-//         // return totalBookmarks++;
-//     }
-
-
-//     // bookmarks.forEach(bookmark => {
-//     //     // console.log(bookmark);
-
-//     // })
-
-
-
-//     console.log('Finished Scanning Bookmarks!');
-// };
