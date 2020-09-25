@@ -51,24 +51,13 @@ const createBookmarkFolder = (incognito = false, domainNames = []) => {
 };
 
 const createPublicSubTreeFolder = (tabData, bookmarkNodeTree) => {
-    // if (tabData.publicWindows.length) {
     chrome.bookmarks.create({
         parentId: bookmarkNodeTree.id,
         title: `${tabData.publicWindows.length}-Public-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
         index: 0
     }, bookmarkNodeTree => {
         createDomainSubTreeFolder(false, tabData, bookmarkNodeTree);
-    })
-    // bookmarkNodeTree => {
-    //     tabData.publicWindows.forEach(tab => {
-    //         chrome.bookmarks.create({
-    //             parentId: bookmarkNodeTree.id,
-    //             title: tab.title,
-    //             url: tab.url,
-    //         });
-    //     })
-    // }
-    // }
+    });
 }
 
 const createPrivateSubTreeFolder = (tabData, bookmarkNodeTree) => {
@@ -76,31 +65,19 @@ const createPrivateSubTreeFolder = (tabData, bookmarkNodeTree) => {
     //     chrome.tabs.remove(tabData.privateTabIds);
     // }
 
-    // if (tabData.privateWindows.length) {
     chrome.bookmarks.create({
         parentId: bookmarkNodeTree.id,
         title: `${tabData.privateWindows.length}-Incognito-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
         index: 0
     }, bookmarkNodeTree => {
         createDomainSubTreeFolder(true, tabData, bookmarkNodeTree);
-    })
-    //  bookmarkNodeTree => {
-    //     tabData.privateWindows.forEach(tab => {
-    //         chrome.bookmarks.create({
-    //             parentId: bookmarkNodeTree.id,
-    //             title: tab.title,
-    //             url: tab.url,
-    //         });
-    //     })
-    // }
-    // }
+    });
 }
 
 const createDomainSubTreeFolder = (private, tabData, bookmarkNodeTree) => {
     if (private) {
         tabData.privateDomainNames = tabData.privateDomainNames.sort();
         tabData.privateDomainNames.forEach(domain => {
-            // if (bookmarkNodeTree.url.includes(domain)) {
             chrome.bookmarks.create({
                 parentId: bookmarkNodeTree.id,
                 title: domain,
@@ -117,8 +94,7 @@ const createDomainSubTreeFolder = (private, tabData, bookmarkNodeTree) => {
                     }
                 })
             });
-            // }
-        })
+        });
     }
 
     if (!private) {
@@ -127,24 +103,12 @@ const createDomainSubTreeFolder = (private, tabData, bookmarkNodeTree) => {
         console.log('Boomark Folder ID', bookmarkNodeTree.id);
 
         tabData.publicDomainNames.forEach(domain => {
-            // console.log('Domain: ', domain);
-            // console.log('Boomark Folder', bookmarkNodeTree);
-            // if (bookmarkNodeTree.title.includes(domain)) {
             chrome.bookmarks.create({
                 parentId: bookmarkNodeTree.id,
                 title: domain,
             }, bookmarkNodeTree => {
-                // console.log('Tabs from Tab Data: ', tabData.tabs);
-                console.log('Boomark Folder ID', bookmarkNodeTree.id);
-
-
                 tabData.tabs.forEach(tab => {
-                    // console.log('Tab Data: ', tab);
-                    // console.log('Tab URL: ', tab.url);
-
                     if (tab.url.includes(domain)) {
-                        // console.log('Tab URL: ', tab.url);
-
                         console.log('adding tab to bookmark folder: ', domain);
                         chrome.bookmarks.create({
                             parentId: bookmarkNodeTree.id,
@@ -154,30 +118,10 @@ const createDomainSubTreeFolder = (private, tabData, bookmarkNodeTree) => {
                     } else {
                         console.log('Going to next opened tab!');
                     }
-                })
+                });
             });
-            // }
-        })
+        });
     }
-
-
-    // tabData.domainNames = tabData.domainNames.sort();
-    // tabData.domainNames.forEach(domain => {
-    //     chrome.bookmarks.create({
-    //         parentId: bookmarkNodeTree.id,
-    //         title: domain,
-    //     }, bookmarkNodeTree => {
-    //         tabData.tabs.forEach(tab => {
-    //             if (tab.url.includes(domain)) {
-    //                 chrome.bookmarks.create({
-    //                     parentId: bookmarkNodeTree.id,
-    //                     title: tab.title,
-    //                     url: tab.url
-    //                 })
-    //             }
-    //         })
-    //     });
-    // })
 }
 
 /**
@@ -233,23 +177,7 @@ const saveOpenTabs = (bookmarkNodeTree) => {
             createPublicSubTreeFolder(tabData, bookmarkNodeTree);
         }
 
-        // tabData.domainNames = tabData.domainNames.sort();
-        // tabData.domainNames.forEach(domain => {
-        //     chrome.bookmarks.create({
-        //         parentId: bookmarkNodeTree.id,
-        //         title: domain,
-        //     }, bookmarkNodeTree => {
-        //         tabs.forEach(tab => {
-        //             if (tab.url.includes(domain)) {
-        //                 chrome.bookmarks.create({
-        //                     parentId: bookmarkNodeTree.id,
-        //                     title: tab.title,
-        //                     url: tab.url
-        //                 })
-        //             }
-        //         })
-        //     });
-        // })
+        saveTabsToFile(tabs);
 
         // console.log(tabData.privateTabIds);
         // console.log(tabData.privateTabIds.length);
@@ -293,9 +221,6 @@ const saveOpenTabs = (bookmarkNodeTree) => {
         //         })
         //     })
         // }
-
-        // saveTabsToFile(tabs);
-
     });
 };
 
