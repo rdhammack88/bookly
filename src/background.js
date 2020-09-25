@@ -29,6 +29,10 @@ const init = (tab) => {
     // getBookmarks();
 };
 
+const getDomainName = url => {
+    return url.split('//').pop().toString().split('/')[0].toString().replace('www.', '').replace('.com', '').replace('.org', '').split('.');
+}
+
 /**
  * Creates a NEW bookmark folder to SAVE ALL open tabs to
  * Defaults to the first index of "Other Bookmarks" Folder
@@ -46,60 +50,134 @@ const createBookmarkFolder = (incognito = false, domainNames = []) => {
     );
 };
 
-const createPublicSubTreeFolder = () => {
+const createPublicSubTreeFolder = (tabData, bookmarkNodeTree) => {
     // if (tabData.publicWindows.length) {
-    //     chrome.bookmarks.create({
-    //         parentId: bookmarkNodeTree.id,
-    //         title: `${tabData.publicWindows.length}-Public-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
-    //         index: 0
-    //     }, bookmarkNodeTree => {
-    //         tabData.publicWindows.forEach(tab => {
-    //             chrome.bookmarks.create({
-    //                 parentId: bookmarkNodeTree.id,
-    //                 title: tab.title,
-    //                 url: tab.url,
-    //             });
-    //         })
-    //     })
-    // }
-}
-
-const createPrivateSubTreeFolder = () => {
-    // if (tabData.privateWindows.length) {
-    //     chrome.bookmarks.create({
-    //         parentId: bookmarkNodeTree.id,
-    //         title: `${tabData.privateWindows.length}-Incognito-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
-    //         index: 0
-    //     }, bookmarkNodeTree => {
-    //         tabData.privateWindows.forEach(tab => {
-    //             chrome.bookmarks.create({
-    //                 parentId: bookmarkNodeTree.id,
-    //                 title: tab.title,
-    //                 url: tab.url,
-    //             });
-    //         })
-    //     })
-    // }
-}
-
-const createDomainSubTreeFolder = () => {
-    tabData.domainNames = tabData.domainNames.sort();
-    tabData.domainNames.forEach(domain => {
-        chrome.bookmarks.create({
-            parentId: bookmarkNodeTree.id,
-            title: domain,
-        }, bookmarkNodeTree => {
-            tabs.forEach(tab => {
-                if (tab.url.includes(domain)) {
-                    chrome.bookmarks.create({
-                        parentId: bookmarkNodeTree.id,
-                        title: tab.title,
-                        url: tab.url
-                    })
-                }
-            })
-        });
+    chrome.bookmarks.create({
+        parentId: bookmarkNodeTree.id,
+        title: `${tabData.publicWindows.length}-Public-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
+        index: 0
+    }, bookmarkNodeTree => {
+        createDomainSubTreeFolder(false, tabData, bookmarkNodeTree);
     })
+    // bookmarkNodeTree => {
+    //     tabData.publicWindows.forEach(tab => {
+    //         chrome.bookmarks.create({
+    //             parentId: bookmarkNodeTree.id,
+    //             title: tab.title,
+    //             url: tab.url,
+    //         });
+    //     })
+    // }
+    // }
+}
+
+const createPrivateSubTreeFolder = (tabData, bookmarkNodeTree) => {
+    // if (tabData.privateTabIds.length) {
+    //     chrome.tabs.remove(tabData.privateTabIds);
+    // }
+
+    // if (tabData.privateWindows.length) {
+    chrome.bookmarks.create({
+        parentId: bookmarkNodeTree.id,
+        title: `${tabData.privateWindows.length}-Incognito-Windows-from-${new Date().toDateString().split(' ').join('-')}`,
+        index: 0
+    }, bookmarkNodeTree => {
+        createDomainSubTreeFolder(true, tabData, bookmarkNodeTree);
+    })
+    //  bookmarkNodeTree => {
+    //     tabData.privateWindows.forEach(tab => {
+    //         chrome.bookmarks.create({
+    //             parentId: bookmarkNodeTree.id,
+    //             title: tab.title,
+    //             url: tab.url,
+    //         });
+    //     })
+    // }
+    // }
+}
+
+const createDomainSubTreeFolder = (private, tabData, bookmarkNodeTree) => {
+    if (private) {
+        tabData.privateDomainNames = tabData.privateDomainNames.sort();
+        tabData.privateDomainNames.forEach(domain => {
+            // if (bookmarkNodeTree.url.includes(domain)) {
+            chrome.bookmarks.create({
+                parentId: bookmarkNodeTree.id,
+                title: domain,
+            }, bookmarkNodeTree => {
+                tabData.tabs.forEach(tab => {
+                    if (tab.url.includes(domain) && tab.incognito) {
+                        chrome.bookmarks.create({
+                            parentId: bookmarkNodeTree.id,
+                            title: tab.title,
+                            url: tab.url
+                        })
+                    } else {
+                        console.log('Going to next opened tab!');
+                    }
+                })
+            });
+            // }
+        })
+    }
+
+    if (!private) {
+        tabData.publicDomainNames = tabData.publicDomainNames.sort();
+        console.log('Tabs from Tab Data: ', tabData.tabs);
+        console.log('Boomark Folder ID', bookmarkNodeTree.id);
+
+        tabData.publicDomainNames.forEach(domain => {
+            // console.log('Domain: ', domain);
+            // console.log('Boomark Folder', bookmarkNodeTree);
+            // if (bookmarkNodeTree.title.includes(domain)) {
+            chrome.bookmarks.create({
+                parentId: bookmarkNodeTree.id,
+                title: domain,
+            }, bookmarkNodeTree => {
+                // console.log('Tabs from Tab Data: ', tabData.tabs);
+                console.log('Boomark Folder ID', bookmarkNodeTree.id);
+
+
+                tabData.tabs.forEach(tab => {
+                    // console.log('Tab Data: ', tab);
+                    // console.log('Tab URL: ', tab.url);
+
+                    if (tab.url.includes(domain)) {
+                        // console.log('Tab URL: ', tab.url);
+
+                        console.log('adding tab to bookmark folder: ', domain);
+                        chrome.bookmarks.create({
+                            parentId: bookmarkNodeTree.id,
+                            title: tab.title,
+                            url: tab.url
+                        })
+                    } else {
+                        console.log('Going to next opened tab!');
+                    }
+                })
+            });
+            // }
+        })
+    }
+
+
+    // tabData.domainNames = tabData.domainNames.sort();
+    // tabData.domainNames.forEach(domain => {
+    //     chrome.bookmarks.create({
+    //         parentId: bookmarkNodeTree.id,
+    //         title: domain,
+    //     }, bookmarkNodeTree => {
+    //         tabData.tabs.forEach(tab => {
+    //             if (tab.url.includes(domain)) {
+    //                 chrome.bookmarks.create({
+    //                     parentId: bookmarkNodeTree.id,
+    //                     title: tab.title,
+    //                     url: tab.url
+    //                 })
+    //             }
+    //         })
+    //     });
+    // })
 }
 
 /**
@@ -113,36 +191,47 @@ const saveOpenTabs = (bookmarkNodeTree) => {
         publicWindows: [],
         privateWindows: [],
         privateTabIds: [],
-        domainNames: []
+        privateDomainNames: [],
+        publicDomainNames: [],
+        domainNames: [],
+        tabs: {}
     }
     chrome.tabs.query({}, (tabs) => {
-
+        // tabData.tabs.push(tabs);
+        tabData.tabs = tabs;
         chrome.browserAction.setBadgeText({
             text: tabs.length.toString()
         });
 
         tabs.forEach((tab) => {
-            let tabUrl = tab.url.split('//').pop().toString().split('/')[0].toString().replace('www.', '').replace('.com', '').replace('.org', '').split('.');
+            let tabUrl = getDomainName(tab.url);
             tabUrl = tabUrl[tabUrl.length - 1];
             if (!tabData.domainNames.includes(tabUrl)) {
                 tabData.domainNames.push(tabUrl);
             }
-            // console.log(tabUrl);
-            // console.log(tab.id);
-
-            // chrome.bookmarks.create({
-            //     parentId: bookmarkNodeTree.id,
-            //     title: tab.title,
-            //     url: tab.url,
-            // });
-
             if (tab.incognito) {
                 tabData.privateWindows.push(tab);
                 tabData.privateTabIds.push(tab.id);
+                if (!tabData.privateDomainNames.includes(tabUrl)) {
+                    tabData.privateDomainNames.push(tabUrl);
+                }
             } else if (!tab.incognito) {
                 tabData.publicWindows.push(tab);
+                if (!tabData.publicDomainNames.includes(tabUrl)) {
+                    tabData.publicDomainNames.push(tabUrl);
+                }
             }
         });
+
+        // createDomainSubTreeFolder(tabData, bookmarkNodeTree);
+
+        if (tabData.privateWindows.length) {
+            createPrivateSubTreeFolder(tabData, bookmarkNodeTree);
+        }
+
+        if (tabData.publicWindows.length) {
+            createPublicSubTreeFolder(tabData, bookmarkNodeTree);
+        }
 
         // tabData.domainNames = tabData.domainNames.sort();
         // tabData.domainNames.forEach(domain => {
