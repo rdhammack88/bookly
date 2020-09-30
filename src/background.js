@@ -25,8 +25,11 @@
  */
 const init = (tab) => {
     // console.log(window.navigator);
+
     createBookmarkFolder();
     // getBookmarks();
+
+    // searchBookmarks();
 };
 
 const getDomainName = url => {
@@ -302,6 +305,30 @@ const getBookmarks = () => {
         // console.log('Bookmark Data Stringified: ', JSON.stringify(bookmarkData));
     });
 };
+
+const searchBookmarks = () => {
+    let query = 'porn';
+    const bookmarkData = {
+        bookmarks: [],
+        duplicateBookmarks: []
+    }
+    chrome.bookmarks.search(query, (bookmarkNodes) => {
+        console.log('Searching for bookmarks that include: ', query);
+        console.log('Bookmark Node Length: ', bookmarkNodes.length);
+        console.log('Bookmark Nodes: ', bookmarkNodes);
+
+        bookmarkNodes.forEach(node => {
+            if (!bookmarkData.bookmarks.includes(node.url)) {
+                bookmarkData.bookmarks.push(node.url)
+            } else if (bookmarkData.bookmarks.includes(node.url)) {
+                bookmarkData.duplicateBookmarks.push(node.url);
+            }
+        });
+
+        console.log('Bookmarks length: ', bookmarkData.bookmarks);
+        console.log('Duplicate Bookmarks length: ', bookmarkData.duplicateBookmarks);
+    })
+}
 
 /** Event Listeners */
 
