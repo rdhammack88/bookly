@@ -8,19 +8,32 @@
 </head>
 
 <body>
-    <h1>Bookly!</h1>
-    <p id="total-folders"></p>
-    <p id="total-bookmarks"></p>
+    <div id="sidebar">
+        <h1>Bookly!</h1>
+        <p><span id="total-folders"></span> Total Folders</p>
+        <p><span id="total-bookmarks"></span> Total Bookmarks</p>
+    </div>
+
+    <div id="search-container">
+        <form>
+            <input type="text" id="query" value='' placeholder="Search Bookmarks">
+            <button id="search" type="submit">Search</button>
+            <br>
+            <button id="search-duplicate-bookmarks" type="submit">Search for Duplicate Bookmarks</button>
+        </form>
+    </div>
 
     <br>
-    <div>
-        <p id="test">test</p>
+    <div id="container">
+        <!-- <p id="test">test</p> -->
+
+        <ul id="bookmarkList"></ul>
     </div>
 
     <script src="src/index.js" defer></script>
-    <script>
+    <!-- <script>
         document.getElementById('test').innerHTML = "Running from INDEX.html";
         getBookmarks();
-    </script>
+    </script> -->
 </body>
 </html>
