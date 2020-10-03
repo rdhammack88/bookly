@@ -5,6 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bookly</title>
+
+    <style>
+        .bookmark-node {
+            /* width: 100%; */
+            padding: 0.67em;
+            margin: .25em 2em;
+            cursor: pointer;
+            border: 1px solid #aaa;
+            background-color: #e7e7e7;
+        }
+
+        .bookmark-node-folder {
+            background-color: #222;
+            color: #fff;
+        }
+
+        .bookmark-node-count--badge {
+            border-radius: 50%;
+            background-color: #774399;
+            /* color: #436343; */
+            color: #fff;
+        }
+
+        #bookmark-node-list {
+            /* width: 75%; */
+            padding: 0;
+            margin: 0;
+            background-color: #eee;
+            list-style-type: none;
+        }
+
+        #back-btn {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
@@ -27,7 +62,8 @@
     <div id="container">
         <!-- <p id="test">test</p> -->
 
-        <ul id="bookmarkList"></ul>
+        <div><button type="button" id="back-btn">Back</button></div>
+        <ul id="bookmark-node-list"></ul>
     </div>
 
     <script src="src/index.js" defer></script>
