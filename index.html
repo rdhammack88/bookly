@@ -7,10 +7,20 @@
     <title>Bookly</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 25% 75%;
+            justify-content: space-evenly;
+        }
+
         .bookmark-node {
-            /* width: 100%; */
+            width: 100%;
             padding: 0.67em;
-            margin: .25em 2em;
+            margin: .25em 0;
             cursor: pointer;
             border: 1px solid #aaa;
             background-color: #e7e7e7;
@@ -29,9 +39,9 @@
         }
 
         #bookmark-node-list {
-            /* width: 75%; */
+            width: 90%;
             padding: 0;
-            margin: 0;
+            margin: 0 auto;
             background-color: #eee;
             list-style-type: none;
         }
@@ -39,37 +49,52 @@
         #back-btn {
             display: none;
         }
+
+        #progress-bar-wrapper {
+            display: none;
+            /* visibility: hidden; */
+            width: 200px;
+            height: 20px;
+            background-color: #ccc;
+        }
+
+        #progress-bar {
+            display: block;
+            width: 0px;
+            height: 20px;
+            background-color: rgb(19, 176, 248);
+        }
     </style>
 </head>
 
 <body>
-    <div id="sidebar">
-        <h1>Bookly!</h1>
-        <p><span id="total-folders"></span> Total Folders</p>
-        <p><span id="total-bookmarks"></span> Total Bookmarks</p>
-    </div>
+    <div class="grid-container">
+        <div id="sidebar">
+            <h1>Bookly!</h1>
+            <p><span id="total-folders"></span> Total Folders</p>
+            <p><span id="total-bookmarks"></span> Total Bookmarks</p>
+        </div>
 
-    <div id="search-container">
-        <form>
-            <input type="text" id="query" value='' placeholder="Search Bookmarks">
-            <button id="search" type="submit">Search</button>
-            <br>
-            <button id="search-duplicate-bookmarks" type="submit">Search for Duplicate Bookmarks</button>
-        </form>
-    </div>
+        <div id="search-container">
+            <form>
+                <input type="text" id="query" value='' placeholder="Search Bookmarks">
+                <button id="search" type="submit">Search</button>
+                <button id="search-duplicate-bookmarks" type="submit">Search for Duplicate Bookmarks</button>
+            </form>
+        </div>
 
-    <br>
-    <div id="container">
-        <!-- <p id="test">test</p> -->
+        <br>
+        <div id="container">
+            <div id="progress-bar-wrapper">
+                <div id="progress-bar"></div>
+            </div>
 
-        <div><button type="button" id="back-btn">Back</button></div>
-        <ul id="bookmark-node-list"></ul>
+            <div><button type="button" id="back-btn">Back</button></div>
+
+            <ul id="bookmark-node-list"></ul>
+        </div>
     </div>
 
     <script src="src/index.js" defer></script>
-    <!-- <script>
-        document.getElementById('test').innerHTML = "Running from INDEX.html";
-        getBookmarks();
-    </script> -->
 </body>
 </html>
