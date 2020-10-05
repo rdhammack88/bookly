@@ -22,7 +22,7 @@ const traverseBookmarks = (bookmarkData, bookmarkNode, traverseType = '') => {
         bookmarkNode.children.forEach((bookmark) => {
             if (traverseType === 'get') {
                 if (bookmarkNode.title === '' && bookmark.children) {
-                    bookmarkData.bookmarkNodeListItems += `<li class="bookmark-node-folder bookmark-node" data-id="${bookmark.id}">${bookmark.title}  <span class="bookmark-node-count--badge">${bookmark.children.length}</span></li>`
+                    bookmarkData.bookmarkNodeListItems += `<li class="bookmark-node-folder bookmark-node" data-id="${bookmark.id}"><span class="node-icon"><i class="fas fa-folder"></i> <span class="bookmark-node-count--badge">${bookmark.children.length}</span></span>${bookmark.title}</li>`
                 }
                 bookmarkData.totalFolders++;
                 bookmarkData.bookmarkFolders.push(bookmarkNode);
@@ -40,7 +40,7 @@ const traverseBookmarks = (bookmarkData, bookmarkNode, traverseType = '') => {
 /**
  * Iterate through all bookmarks
  * Initialize bookmarkData to keep track of count
- * Initialized upon user action click
+ * Initialized upon Page Content Load
  */
 const getBookmarks = () => {
     let bookmarkData = {
@@ -53,17 +53,12 @@ const getBookmarks = () => {
 
     chrome.bookmarks.getTree((bookmarks) => {
         bookmarks.forEach((bookmark) => {
-            // document.getElementById('bookmarkList').innerHTML += `<li>${bookmark.title}</li>`;
             bookmarkData = traverseBookmarks(bookmarkData, bookmark, 'get');
         });
 
         document.getElementById('total-bookmarks').innerText = bookmarkData.totalBookmarks;
         document.getElementById('total-folders').innerText = bookmarkData.totalFolders;
         document.getElementById('bookmark-node-list').innerHTML = bookmarkData.bookmarkNodeListItems;
-
-        console.log('Finished Scanning Bookmarks!');
-        console.log('Bookmarks: ', bookmarks);
-        console.log('Bookmark Data: ', bookmarkData);
 
         // const bookmarkDataStringified = JSON.stringify(bookmarkData);
         // console.log('Bookmark Data Stringified: ', JSON.stringify(bookmarkData));
@@ -121,28 +116,18 @@ const getSubTreeNodes = (id) => {
     let nodeList = '';
 
     chrome.bookmarks.getSubTree(id, (bookmarkNode) => {
-        // console.log('Sub Tree Bookmark Nodes: ', bookmarkNodes);
         let bookmarkNodes = bookmarkNode[0].children;
-        console.log(bookmarkNodes);
-        // console.log('Children Bookmark Nodes', bookmarkNodes);
-
 
         bookmarkNodes.forEach(bookmarkNode => {
             if (bookmarkNode.url) {
-                nodeList += `<li class="bookmark-node">${bookmarkNode.title}</li>`;
+                nodeList += `<li class="bookmark-node"><span class="node-icon"><i class="fas fa-file"></i></span>${bookmarkNode.title}</li>`;
             } else if (!bookmarkNode.url) {
-                console.log('Bookmark Node should have Children Prop: ', bookmarkNode);
-                // nodeList += `<li class="bookmark-node-folder bookmark-node" data-id="${bookmarkNode.id}">${bookmarkNode.title}</li>`
-                nodeList += `<li class="bookmark-node-folder bookmark-node" data-id="${bookmarkNode.id}">${bookmarkNode.title} <span class="bookmark-node-count--badge">${bookmarkNode.children.length}</span></li>`
+                nodeList += `<li class="bookmark-node-folder bookmark-node" data-id="${bookmarkNode.id}"><span class="node-icon"><i class="fas fa-folder"></i><span class="bookmark-node-count--badge">${bookmarkNode.children.length}</span></span>${bookmarkNode.title}</li>`
             }
         });
 
-        // // document.getElementById('back-btn').dataset.id = targetId;
-
         // document.getElementById('bookmark-node-list').innerHTML = nodeList;
         showProgressBar(0, nodeList);
-
-        // // console.log('Node List Items: ', nodeList);
         return nodeList;
     });
     return nodeList;
@@ -154,6 +139,7 @@ const getParentNode = (id) => {
         console.log('Back button data-id -> parentNode id: ', bookmarkNode[0].parentId);
         let parentId = bookmarkNode[0].parentId.toString() || bookmarkNode.parentId.toString();
         if (parentId === '0') {
+            document.getElementById('back-btn').dataset.id = parentId;
             document.getElementById('back-btn').style = 'display: none';
         } else {
             document.getElementById('back-btn').dataset.id = parentId;
@@ -207,7 +193,24 @@ const showProgressBar = (len = 0, dataToShow) => {
     }
 }
 
+const getBreadcrumbTitle = (id) => {
+    let title = '';
+    chrome.bookmarks.get(id, (bookmarkNode) => {
+        title = bookmarkNode[0].title;
+        document.getElementById('breadcrumbs').innerHTML += `<a href="#" class="breadcrumb" data-id="${bookmarkNode[0].id}"><i class="fas fa-caret-right"></i> ${title}</a>`;
+    });
+}
+
+/** EVENT LISTENERS */
+
+/**
+ * Initial Event Listener for Page Load
+ */
 document.addEventListener('DOMContentLoaded', getBookmarks);
+
+/**
+ * Event Listener for SEARCH Button Click
+ */
 document.getElementById('search').addEventListener('click', (e) => {
     e.preventDefault();
     const query = document.getElementById('query').value;
@@ -215,27 +218,44 @@ document.getElementById('search').addEventListener('click', (e) => {
     searchBookmarks(query);
 });
 
+/**
+ * Event Listener for DUPLICATE SEARCH Button Click
+ */
 document.getElementById('search-duplicate-bookmarks').addEventListener('click', (e) => {
     e.preventDefault();
     getDuplicateBookmarks();
 });
 
+/**
+ * Event listener for Bookmark Node Folder CLICK
+ */
 document.addEventListener('click', (e) => {
-    // console.log(e.target.className.includes('bookmark-node-folder'));
     if (e.target.className.includes('bookmark-node-folder')) {
-        console.log(e.target.dataset.id);
         let targetId = e.target.dataset.id.toString();
 
-        document.getElementById('back-btn').style = 'display: block';
+        document.getElementById('bookmark-node-list').innerHTML = '';
+        document.getElementById('back-btn').style.display = 'none';
         document.getElementById('back-btn').dataset.id = targetId;
+
+        getBreadcrumbTitle(targetId);
         getSubTreeNodes(targetId);
-        // getChildrenNodes(targetId);
+    }
+
+    if (e.target.className.includes('breadcrumb')) {
+        let targetId = e.target.dataset.id.toString();
+        document.getElementById('bookmark-node-list').innerHTML = '';
+        document.getElementById('back-btn').style.display = 'none';
+        document.getElementById('back-btn').dataset.id = targetId;
+        getBreadcrumbTitle(targetId);
+        getSubTreeNodes(targetId);
     }
 });
 
+/**
+ * Event listener for Back Button CLICK to traverse ONE folder up in the Bookmark Heirarchy
+ */
 document.getElementById('back-btn').addEventListener('click', (e) => {
     if (e.target.dataset.id) {
-        console.log('Back button current data-id: ', e.target.dataset.id);
         let targetId = e.target.dataset.id.toString();
         getParentNode(targetId);
     }
