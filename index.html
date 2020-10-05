@@ -5,77 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bookly</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: 25% 75%;
-            justify-content: space-evenly;
-        }
-
-        .bookmark-node {
-            width: 100%;
-            padding: 0.67em;
-            margin: .25em 0;
-            cursor: pointer;
-            border: 1px solid #aaa;
-            background-color: #e7e7e7;
-        }
-
-        .bookmark-node-folder {
-            background-color: #222;
-            color: #fff;
-        }
-
-        .bookmark-node-count--badge {
-            border-radius: 50%;
-            background-color: #774399;
-            /* color: #436343; */
-            color: #fff;
-        }
-
-        #bookmark-node-list {
-            width: 90%;
-            padding: 0;
-            margin: 0 auto;
-            background-color: #eee;
-            list-style-type: none;
-        }
-
-        #back-btn {
-            display: none;
-        }
-
-        #progress-bar-wrapper {
-            display: none;
-            /* visibility: hidden; */
-            width: 200px;
-            height: 20px;
-            background-color: #ccc;
-        }
-
-        #progress-bar {
-            display: block;
-            width: 0px;
-            height: 20px;
-            background-color: rgb(19, 176, 248);
-        }
-    </style>
+    <link rel="stylesheet" href="./styles/font-awesome/css/all.css">
+    <link rel="stylesheet" href="./styles/styles.css">
 </head>
 
 <body>
     <div class="grid-container">
-        <div id="sidebar">
+        <div id="sidebar-wrapper">
             <h1>Bookly!</h1>
             <p><span id="total-folders"></span> Total Folders</p>
             <p><span id="total-bookmarks"></span> Total Bookmarks</p>
         </div>
 
-        <div id="search-container">
+        <div id="search-wrapper">
             <form>
                 <input type="text" id="query" value='' placeholder="Search Bookmarks">
                 <button id="search" type="submit">Search</button>
@@ -83,15 +25,17 @@
             </form>
         </div>
 
-        <br>
-        <div id="container">
+        <div id="content-wrapper">
             <div id="progress-bar-wrapper">
                 <div id="progress-bar"></div>
             </div>
 
-            <div><button type="button" id="back-btn">Back</button></div>
+            <div>
+                <button type="button" id="back-btn">Back</button>
+                <div id="breadcrumbs"></div>
+                <ul id="bookmark-node-list"></ul>
+            </div>
 
-            <ul id="bookmark-node-list"></ul>
         </div>
     </div>
 
