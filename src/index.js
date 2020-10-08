@@ -51,6 +51,8 @@ const getBookmarks = () => {
         bookmarkNodeListItems: ''
     };
 
+    getSubTreeNodes('0', 'sidebar');
+
     chrome.bookmarks.getTree((bookmarks) => {
         bookmarks.forEach((bookmark) => {
             bookmarkData = traverseBookmarks(bookmarkData, bookmark, 'get');
@@ -112,7 +114,7 @@ const getDuplicateBookmarks = () => {
     });
 };
 
-const getSubTreeNodes = (id) => {
+const getSubTreeNodes = (id, loadArea = 'main-content') => {
     let nodeList = '';
 
     chrome.bookmarks.getSubTree(id, (bookmarkNode) => {
@@ -127,7 +129,11 @@ const getSubTreeNodes = (id) => {
         });
 
         // document.getElementById('bookmark-node-list').innerHTML = nodeList;
-        showProgressBar(0, nodeList);
+        if (loadArea === 'main-content') {
+            showProgressBar(0, nodeList);
+        } else {
+            document.getElementById('sidebar-content-node-list').innerHTML = nodeList;
+        }
         return nodeList;
     });
     return nodeList;
@@ -211,9 +217,9 @@ document.addEventListener('DOMContentLoaded', getBookmarks);
 /**
  * Event Listener for SEARCH Button Click
  */
-document.getElementById('search').addEventListener('click', (e) => {
+document.getElementById('search-btn').addEventListener('click', (e) => {
     e.preventDefault();
-    const query = document.getElementById('query').value;
+    const query = document.getElementById('search-query').value;
     console.log(query);
     searchBookmarks(query);
 });
@@ -221,7 +227,7 @@ document.getElementById('search').addEventListener('click', (e) => {
 /**
  * Event Listener for DUPLICATE SEARCH Button Click
  */
-document.getElementById('search-duplicate-bookmarks').addEventListener('click', (e) => {
+document.getElementById('search-duplicate-bookmarks-btn').addEventListener('click', (e) => {
     e.preventDefault();
     getDuplicateBookmarks();
 });
