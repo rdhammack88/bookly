@@ -11,17 +11,26 @@
 
 <body>
     <div class="grid-container">
-        <div id="sidebar-wrapper">
-            <h1>Bookly!</h1>
-            <p><span id="total-folders"></span> Total Folders</p>
-            <p><span id="total-bookmarks"></span> Total Bookmarks</p>
+        <div id="sidebar-wrapper" resizable="true">
+            <div id="sidebar-header">
+                <h1>Bookly!</h1>
+                <p><span id="total-folders"></span> Total Folders</p>
+                <p><span id="total-bookmarks"></span> Total Bookmarks</p>
+            </div>
+            <div id="sidebar-content" class="sidebar-content">
+                <ul class="sidebar-content-node-list" id="sidebar-content-node-list">
+                    <li>1</li>
+                    <li>2</li>
+                    <li>3</li>
+                </ul>
+            </div>
         </div>
 
         <div id="search-wrapper">
-            <form>
-                <input type="text" id="query" value='' placeholder="Search Bookmarks">
-                <button id="search" type="submit">Search</button>
-                <button id="search-duplicate-bookmarks" type="submit">Search for Duplicate Bookmarks</button>
+            <form id="search-form" class="search-form">
+                <input type="text" id="search-query" class="search-query" value='' placeholder="Search Bookmarks">
+                <button id="search-btn" class="search-btn" type="submit"><i class="fas fa-search"></i></button>
+                <!-- <button id="search-duplicate-bookmarks-btn" type="submit">Search for Duplicate Bookmarks</button> -->
             </form>
         </div>
 
